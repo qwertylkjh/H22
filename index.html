@@ -8,7 +8,7 @@
   <style>
     body {
       margin: 0;
-      height: 100vh;
+      min-height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -16,8 +16,11 @@
       font-family: Georgia, serif;
       color: white;
       text-align: center;
-      overflow: hidden;
       padding: 20px;
+
+      /* ✅ allow scrolling if content is taller than screen */
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
     }
 
     /* ===== Background glow + particles ===== */
@@ -61,8 +64,8 @@
       to   { transform: translateY(-120vh); opacity: 0; }
     }
 
-    /* ===== Button ===== */
-    button {
+    /* ===== Main button ===== */
+    .primary-btn {
       font-size: 1.25rem;
       padding: 14px 28px;
       border-radius: 999px;
@@ -74,7 +77,7 @@
       transition: all 0.2s ease;
     }
 
-    button:hover {
+    .primary-btn:hover {
       transform: translateY(-2px);
       box-shadow: 0 0 45px rgba(56,189,248,0.35);
     }
@@ -89,17 +92,21 @@
       background: rgba(255,255,255,0.08);
       backdrop-filter: blur(6px);
       box-shadow: 0 0 60px rgba(168,139,250,0.55);
-      transform: perspective(900px) rotateX(-18deg);
       opacity: 0;
+      transform: perspective(900px) rotateX(-18deg);
+
+      /* ✅ keep the card from exceeding the screen height */
+      max-height: calc(100vh - 60px);
+      overflow: hidden; /* internal scroller handles content */
     }
 
     #card.show {
-      animation: openCard 0.9s cubic-bezier(.2,.9,.2,1) forwards;
+      animation: openCard 0.7s cubic-bezier(.2,.9,.2,1) forwards;
     }
 
     @keyframes openCard {
-      0%   { opacity: 0; transform: rotateX(-22deg); }
-      100% { opacity: 1; transform: rotateX(0deg); }
+      0%   { opacity: 0; transform: perspective(900px) rotateX(-22deg); }
+      100% { opacity: 1; transform: perspective(900px) rotateX(0deg); }
     }
 
     .avatar-symbol {
@@ -113,6 +120,14 @@
       to   { text-shadow: 0 0 30px #a78bfa; }
     }
 
+    /* ✅ Scrollable content area inside the card */
+    .card-inner {
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      max-height: calc(100vh - 60px - 84px); /* viewport minus padding-ish */
+      padding-right: 6px; /* small space for scrollbar */
+    }
+
     /* ===== Pages ===== */
     .page {
       display: none;
@@ -121,7 +136,7 @@
 
     .page.active {
       display: block;
-      animation: fadeIn 0.5s ease both;
+      animation: fadeIn 0.35s ease both;
     }
 
     @keyframes fadeIn {
@@ -129,62 +144,93 @@
       to   { opacity: 1; transform: translateY(0); }
     }
 
-    .fade-line {
+    /* Lines/blocks fade in quickly */
+    .fade {
       opacity: 0;
-      transition: 0.7s ease;
+      transform: translateY(6px);
+      transition: 0.35s ease;
     }
 
-    .fade-line.show {
+    .fade.show {
       opacity: 1;
+      transform: translateY(0);
     }
 
-    /* ===== Typewriter ===== */
-    .typewriter {
+    p {
+      line-height: 1.7;
+      font-size: 1.05rem;
+      margin: 12px 0;
+    }
+
+    /* Long text block (no typing) */
+    .message {
       text-align: left;
       line-height: 1.75;
       font-size: 1.02rem;
-      min-height: 160px;
-      white-space: pre-wrap;
+      white-space: normal;
     }
 
-    .caret {
-      animation: blink 1s infinite;
-    }
-
-    @keyframes blink {
-      50% { opacity: 0; }
-    }
-
-    /* ===== Highlight text ===== */
+    /* Happy Birthday emphasis */
     .big {
       margin-top: 26px;
       font-size: 1.85rem;
       letter-spacing: 0.3px;
       text-shadow: 0 0 14px rgba(56,189,248,0.6);
       opacity: 0;
-      transition: 0.7s ease;
+      transform: translateY(6px);
+      transition: 0.35s ease;
+      text-align: center;
     }
 
     .big.show {
       opacity: 1;
+      transform: translateY(0);
     }
 
     .signoff {
       margin-top: 10px;
       opacity: 0;
-      transition: 0.7s ease;
+      transform: translateY(6px);
+      transition: 0.35s ease;
+      text-align: center;
+
+      /* ✅ extra space so nothing feels cut off */
+      padding-bottom: 26px;
     }
 
     .signoff.show {
       opacity: 1;
+      transform: translateY(0);
     }
 
     .controls {
-      margin-top: 28px;
+      margin-top: 22px;
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .secondary-btn {
+      font-size: 1rem;
+      padding: 10px 16px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.18);
+      background: rgba(255,255,255,0.10);
+      color: rgba(255,255,255,0.92);
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .secondary-btn:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.06);
     }
 
     @media (max-width: 420px) {
       #card { padding: 28px; }
+      p { font-size: 1.02rem; }
+      .message { font-size: 0.98rem; }
       .big { font-size: 1.55rem; }
     }
   </style>
@@ -193,106 +239,93 @@
 <body>
   <div class="bg-glow" id="bg"></div>
 
-  <button id="openBtn" onclick="openCard()">Unlock: Avatar State 🌀</button>
+  <button class="primary-btn" id="openBtn" onclick="openCard()">Unlock: Avatar State 🌀</button>
 
   <div id="card">
-    <div class="avatar-symbol">🌀</div>
+    <div class="card-inner">
+      <div class="avatar-symbol">🌀</div>
 
-    <!-- PAGE 1 -->
-    <div class="page" id="page1">
-      <p class="fade-line" id="line1">Long ago, the Four Nations lived in harmony...</p>
-      <div class="controls">
-        <button onclick="goToPage(2)" id="next1" disabled>Next ➜</button>
+      <!-- PAGE 1 -->
+      <div class="page" id="page1">
+        <p class="fade" id="line1">Long ago, the Four Nations lived in harmony...</p>
+        <div class="controls">
+          <button class="secondary-btn" onclick="goToPage(2)">Next ➜</button>
+        </div>
       </div>
-    </div>
 
-    <!-- PAGE 2 -->
-    <div class="page" id="page2">
-      <p class="fade-line" id="line2">Then everything changed when you turned <strong>22</strong>!</p>
-      <div class="controls">
-        <button onclick="goToPage(1)">◀ Back</button>
-        <button onclick="goToPage(3)" id="next2" disabled>Next ➜</button>
+      <!-- PAGE 2 -->
+      <div class="page" id="page2">
+        <p class="fade" id="line2">Then everything changed when you turned <strong>22</strong>!</p>
+        <div class="controls">
+          <button class="secondary-btn" onclick="goToPage(1)">◀ Back</button>
+          <button class="secondary-btn" onclick="goToPage(3)">Next ➜</button>
+        </div>
       </div>
-    </div>
 
-    <!-- PAGE 3 -->
-    <div class="page" id="page3">
-      <div class="typewriter" id="typeTarget"></div>
+      <!-- PAGE 3 -->
+      <div class="page" id="page3">
+        <div class="message fade" id="msg">
+          You’re about to graduate, maybe move and start your first full time job, and probably run your first marathon too! There are a lot of “firsts” ahead; some that are happening because life moves forward, but others because you choose for it to happen...and I think the latter says a lot about you. I really admire that about you-- how focused you are on growth, your endless energy and ability to try new things with a smile and stay openminded on your progress. Side note, it just hit me that we’ve been friends for almost three years now, which is kind of crazy. Time moves fast! anyways, Uncle Iroh once said: “I encourage you to trust your instincts and follow your heart. I feel like you have a great moral compass and know what’s best for you at the end of the day.” Just kidding, you told me that when I was going through a rough patch. As you encounter your firsts, whether you feel like the world is going against you or for you, I hope you keep taking your own advice — it suits you well. Congrats on mastering another year, Avatar.
+        </div>
 
-      <div class="big" id="bigLine">Happy 22nd birthday, Ayande!</div>
-      <div class="signoff" id="signoff">love, Zora</div>
+        <div class="big" id="bigLine">Happy 22nd birthday, Ayande!</div>
+        <div class="signoff" id="signoff">love, Zora</div>
 
-      <div class="controls">
-        <button onclick="goToPage(2)">◀ Back</button>
+        <div class="controls">
+          <button class="secondary-btn" onclick="goToPage(2)">◀ Back</button>
+        </div>
       </div>
     </div>
   </div>
 
   <script>
-    // particles
+    // Particles
     const bg = document.getElementById("bg");
     for (let i = 0; i < 30; i++) {
       const p = document.createElement("div");
       p.className = "particle";
       p.style.left = Math.random() * 100 + "vw";
-      p.style.top = Math.random() * 100 + "vh";
-      p.style.animationDuration = 6 + Math.random() * 10 + "s";
+      p.style.top = (Math.random() * 120 - 20) + "vh";
+      p.style.animationDuration = (6 + Math.random() * 10) + "s";
+      p.style.animationDelay = (-Math.random() * 10) + "s";
       bg.appendChild(p);
     }
-
-    const longMessage =
-`You’re about to graduate, maybe move and start your first full time job, and probably run your first marathon too! There are a lot of “firsts” ahead; some that are happening because life moves forward, but others because you choose for it to happen...and I think the latter says a lot about you. I really admire that about you-- how focused you are on growth, your endless energy and ability to try new things with a smile and stay openminded on your progress. Side note, it just hit me that we’ve been friends for almost three years now, which is kind of crazy. Time moves fast! anyways, Uncle Iroh once said: “I encourage you to trust your instincts and follow your heart. I feel like you have a great moral compass and know what’s best for you at the end of the day.” Just kidding, you told me that when I was going through a rough patch. As you encounter your firsts, whether you feel like the world is going against you or for you, I hope you keep taking your own advice — it suits you well. Congrats on mastering another year, Avatar.`;
-
-    let typed = false;
 
     function openCard() {
       document.getElementById("openBtn").style.display = "none";
       const card = document.getElementById("card");
       card.style.display = "block";
       card.classList.add("show");
-
       goToPage(1);
-      setTimeout(() => {
-        document.getElementById("line1").classList.add("show");
-        document.getElementById("next1").disabled = false;
-      }, 1000);
+
+      // ✅ no lag: reveal immediately (tiny timeout just to allow CSS paint)
+      setTimeout(() => document.getElementById("line1").classList.add("show"), 10);
     }
 
     function goToPage(n) {
+      // reset scroll to top of card-inner when changing pages
+      document.querySelector(".card-inner").scrollTop = 0;
+
       document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
       document.getElementById(`page${n}`).classList.add("active");
 
+      if (n === 1) {
+        document.getElementById("line1").classList.add("show");
+      }
+
       if (n === 2) {
-        document.getElementById("line2").classList.remove("show");
-        document.getElementById("next2").disabled = true;
-        setTimeout(() => {
-          document.getElementById("line2").classList.add("show");
-          document.getElementById("next2").disabled = false;
-        }, 1000);
+        // ✅ no lag: show immediately
+        document.getElementById("line2").classList.add("show");
       }
 
-      if (n === 3 && !typed) {
-        typed = true;
-        typeText(longMessage, "typeTarget", () => {
-          document.getElementById("bigLine").classList.add("show");
-          document.getElementById("signoff").classList.add("show");
-        });
-      }
-    }
+      if (n === 3) {
+        // Fade in message + then reveal HBD + signoff
+        const msg = document.getElementById("msg");
+        msg.classList.add("show");
 
-    function typeText(text, id, done) {
-      const el = document.getElementById(id);
-      let i = 0;
-
-      function step() {
-        if (i < text.length) {
-          el.textContent += text[i++];
-          setTimeout(step, 18);
-        } else {
-          done();
-        }
+        setTimeout(() => document.getElementById("bigLine").classList.add("show"), 250);
+        setTimeout(() => document.getElementById("signoff").classList.add("show"), 450);
       }
-      step();
     }
   </script>
 </body>
