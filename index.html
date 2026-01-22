@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Unlock: Avatar State</title>
+
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: radial-gradient(circle at center, #0f172a, #020617);
+      font-family: Georgia, serif;
+      color: white;
+      text-align: center;
+      overflow: hidden;
+      padding: 20px;
+    }
+
+    /* ===== Background glow + particles ===== */
+    .bg-glow {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      overflow: hidden;
+    }
+
+    .bg-glow::before {
+      content: "";
+      position: absolute;
+      inset: -30%;
+      background:
+        radial-gradient(circle at 50% 40%, rgba(56,189,248,0.35), transparent 55%),
+        radial-gradient(circle at 30% 70%, rgba(167,139,250,0.30), transparent 60%),
+        radial-gradient(circle at 70% 75%, rgba(56,189,248,0.25), transparent 55%);
+      filter: blur(12px);
+      animation: drift 10s ease-in-out infinite alternate;
+    }
+
+    @keyframes drift {
+      from { transform: translate(-10px, -10px); }
+      to   { transform: translate(12px, 8px); }
+    }
+
+    .particle {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.35);
+      animation: floatUp linear infinite;
+      pointer-events: none;
+    }
+
+    @keyframes floatUp {
+      from { transform: translateY(40vh); opacity: 0; }
+      15%  { opacity: 0.9; }
+      to   { transform: translateY(-120vh); opacity: 0; }
+    }
+
+    /* ===== Button ===== */
+    button {
+      font-size: 1.25rem;
+      padding: 14px 28px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.2);
+      cursor: pointer;
+      background: linear-gradient(135deg, #38bdf8, #a78bfa);
+      color: #020617;
+      box-shadow: 0 0 30px rgba(56,189,248,0.25);
+      transition: all 0.2s ease;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 45px rgba(56,189,248,0.35);
+    }
+
+    /* ===== Card ===== */
+    #card {
+      display: none;
+      max-width: 520px;
+      width: 100%;
+      padding: 42px;
+      border-radius: 22px;
+      background: rgba(255,255,255,0.08);
+      backdrop-filter: blur(6px);
+      box-shadow: 0 0 60px rgba(168,139,250,0.55);
+      transform: perspective(900px) rotateX(-18deg);
+      opacity: 0;
+    }
+
+    #card.show {
+      animation: openCard 0.9s cubic-bezier(.2,.9,.2,1) forwards;
+    }
+
+    @keyframes openCard {
+      0%   { opacity: 0; transform: rotateX(-22deg); }
+      100% { opacity: 1; transform: rotateX(0deg); }
+    }
+
+    .avatar-symbol {
+      font-size: 4rem;
+      margin-bottom: 14px;
+      animation: glow 2s infinite alternate;
+    }
+
+    @keyframes glow {
+      from { text-shadow: 0 0 10px #38bdf8; }
+      to   { text-shadow: 0 0 30px #a78bfa; }
+    }
+
+    /* ===== Pages ===== */
+    .page {
+      display: none;
+      min-height: 220px;
+    }
+
+    .page.active {
+      display: block;
+      animation: fadeIn 0.5s ease both;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .fade-line {
+      opacity: 0;
+      transition: 0.7s ease;
+    }
+
+    .fade-line.show {
+      opacity: 1;
+    }
+
+    /* ===== Typewriter ===== */
+    .typewriter {
+      text-align: left;
+      line-height: 1.75;
+      font-size: 1.02rem;
+      min-height: 160px;
+      white-space: pre-wrap;
+    }
+
+    .caret {
+      animation: blink 1s infinite;
+    }
+
+    @keyframes blink {
+      50% { opacity: 0; }
+    }
+
+    /* ===== Highlight text ===== */
+    .big {
+      margin-top: 26px;
+      font-size: 1.85rem;
+      letter-spacing: 0.3px;
+      text-shadow: 0 0 14px rgba(56,189,248,0.6);
+      opacity: 0;
+      transition: 0.7s ease;
+    }
+
+    .big.show {
+      opacity: 1;
+    }
+
+    .signoff {
+      margin-top: 10px;
+      opacity: 0;
+      transition: 0.7s ease;
+    }
+
+    .signoff.show {
+      opacity: 1;
+    }
+
+    .controls {
+      margin-top: 28px;
+    }
+
+    @media (max-width: 420px) {
+      #card { padding: 28px; }
+      .big { font-size: 1.55rem; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="bg-glow" id="bg"></div>
+
+  <button id="openBtn" onclick="openCard()">Unlock: Avatar State 🌀</button>
+
+  <div id="card">
+    <div class="avatar-symbol">🌀</div>
+
+    <!-- PAGE 1 -->
+    <div class="page" id="page1">
+      <p class="fade-line" id="line1">Long ago, the Four Nations lived in harmony...</p>
+      <div class="controls">
+        <button onclick="goToPage(2)" id="next1" disabled>Next ➜</button>
+      </div>
+    </div>
+
+    <!-- PAGE 2 -->
+    <div class="page" id="page2">
+      <p class="fade-line" id="line2">Then everything changed when you turned <strong>22</strong>!</p>
+      <div class="controls">
+        <button onclick="goToPage(1)">◀ Back</button>
+        <button onclick="goToPage(3)" id="next2" disabled>Next ➜</button>
+      </div>
+    </div>
+
+    <!-- PAGE 3 -->
+    <div class="page" id="page3">
+      <div class="typewriter" id="typeTarget"></div>
+
+      <div class="big" id="bigLine">Happy 22nd birthday, Ayande!</div>
+      <div class="signoff" id="signoff">love, Zora</div>
+
+      <div class="controls">
+        <button onclick="goToPage(2)">◀ Back</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // particles
+    const bg = document.getElementById("bg");
+    for (let i = 0; i < 30; i++) {
+      const p = document.createElement("div");
+      p.className = "particle";
+      p.style.left = Math.random() * 100 + "vw";
+      p.style.top = Math.random() * 100 + "vh";
+      p.style.animationDuration = 6 + Math.random() * 10 + "s";
+      bg.appendChild(p);
+    }
+
+    const longMessage =
+`You’re about to graduate, maybe move and start your first full time job, and probably run your first marathon too! There are a lot of “firsts” ahead; some that are happening because life moves forward, but others because you choose for it to happen...and I think the latter says a lot about you. I really admire that about you-- how focused you are on growth, your endless energy and ability to try new things with a smile and stay openminded on your progress. Side note, it just hit me that we’ve been friends for almost three years now, which is kind of crazy. Time moves fast! anyways, Uncle Iroh once said: “I encourage you to trust your instincts and follow your heart. I feel like you have a great moral compass and know what’s best for you at the end of the day.” Just kidding, you told me that when I was going through a rough patch. As you encounter your firsts, whether you feel like the world is going against you or for you, I hope you keep taking your own advice — it suits you well. Congrats on mastering another year, Avatar.`;
+
+    let typed = false;
+
+    function openCard() {
+      document.getElementById("openBtn").style.display = "none";
+      const card = document.getElementById("card");
+      card.style.display = "block";
+      card.classList.add("show");
+
+      goToPage(1);
+      setTimeout(() => {
+        document.getElementById("line1").classList.add("show");
+        document.getElementById("next1").disabled = false;
+      }, 1000);
+    }
+
+    function goToPage(n) {
+      document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+      document.getElementById(`page${n}`).classList.add("active");
+
+      if (n === 2) {
+        document.getElementById("line2").classList.remove("show");
+        document.getElementById("next2").disabled = true;
+        setTimeout(() => {
+          document.getElementById("line2").classList.add("show");
+          document.getElementById("next2").disabled = false;
+        }, 1000);
+      }
+
+      if (n === 3 && !typed) {
+        typed = true;
+        typeText(longMessage, "typeTarget", () => {
+          document.getElementById("bigLine").classList.add("show");
+          document.getElementById("signoff").classList.add("show");
+        });
+      }
+    }
+
+    function typeText(text, id, done) {
+      const el = document.getElementById(id);
+      let i = 0;
+
+      function step() {
+        if (i < text.length) {
+          el.textContent += text[i++];
+          setTimeout(step, 18);
+        } else {
+          done();
+        }
+      }
+      step();
+    }
+  </script>
+</body>
+</html>
